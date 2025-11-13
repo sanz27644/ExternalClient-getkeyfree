@@ -71,6 +71,23 @@ p.sub {
   word-break: break-all;
   animation: fadeIn 0.5s ease;
 }
+
+/* Input nama device */
+input {
+  width: 90%;
+  padding: 10px;
+  margin-bottom: 12px;
+  border-radius: 8px;
+  border: 1px solid rgba(255,255,255,0.2);
+  background: rgba(255,255,255,0.05);
+  color: white;
+  font-size: 14px;
+  text-align: center;
+  outline: none;
+}
+input::placeholder { color: #c4b5fd; opacity: 0.7; }
+
+/* Tombol animasi */
 button {
   position: relative;
   background: linear-gradient(135deg, var(--purple1), var(--purple2));
@@ -141,6 +158,8 @@ footer {margin-top:10px;font-size:12px;color:#a78bfa;}
   <h1>EXTERNAL CLIENT GET KEY</h1>
   <p class="sub">Maksimal 1 key setiap 5 menit</p>
 
+  <input id="deviceName" placeholder="Masukkan nama device">
+  
   <div id="keyBox" class="key-box">-- belum ada key --</div>
 
   <div class="controls">
@@ -187,7 +206,7 @@ function draw(){
 draw();
 
 /* ---------- Key Generator ---------- */
-const COOLDOWN = 1*60*1000;
+const COOLDOWN = 5*60*1000;
 const STORAGE_KEY = "external_client_key_data";
 const keyBox=document.getElementById("keyBox");
 const getKeyBtn=document.getElementById("getKeyBtn");
@@ -195,6 +214,7 @@ const copyBtn=document.getElementById("copyBtn");
 const cooldownText=document.getElementById("cooldownText");
 const status=document.getElementById("status");
 let currentKey=null,timer=null;
+
 function generateKey(len=16){
   const c="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
   let r=""; for(let i=0;i<len;i++) r+=c[Math.floor(Math.random()*c.length)];
@@ -240,7 +260,7 @@ copyBtn.onclick=async()=>{
 updateCooldown();
 </script>
 
-<!-- ---------- Firebase Integration (terpisah) ---------- -->
+<!-- ---------- Firebase Integration ---------- -->
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import { getDatabase, ref, push, set } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
@@ -259,55 +279,18 @@ const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 
 function simpanKeyFirebase(key) {
-  // Coba ambil data dari API baru
-  let manufaktur = "Unknown";
-  let ua = navigator.userAgent || "Unknown";
-
-  // Jika browser mendukung userAgentData
-  if (navigator.userAgentData) {
-    try {
-      const brands = navigator.userAgentData.brands || [];
-      const brandNames = brands.map(b => b.brand).join(", ");
-      ua = brandNames;
-      if (brandNames.match(/Vivo/i)) manufaktur = "Vivo";
-      else if (brandNames.match(/Samsung/i)) manufaktur = "Samsung";
-      else if (brandNames.match(/Xiaomi/i)) manufaktur = "Xiaomi";
-      else if (brandNames.match(/Realme/i)) manufaktur = "Realme";
-      else if (brandNames.match(/Oppo/i)) manufaktur = "Oppo";
-      else if (brandNames.match(/Infinix/i)) manufaktur = "Infinix";
-      else manufaktur = brandNames;
-    } catch (e) {
-      console.warn("Gagal membaca userAgentData", e);
-    }
-  } else {
-    // Fallback: deteksi dari userAgent lama
-    if (ua.match(/Vivo/i)) manufaktur = "Vivo";
-    else if (ua.match(/Samsung|SM-|GT-/i)) manufaktur = "Samsung";
-    else if (ua.match(/Xiaomi|Redmi|Mi\s/i)) manufaktur = "Xiaomi";
-    else if (ua.match(/Realme/i)) manufaktur = "Realme";
-    else if (ua.match(/Oppo/i)) manufaktur = "Oppo";
-    else if (ua.match(/Infinix/i)) manufaktur = "Infinix";
-    else if (ua.match(/Huawei/i)) manufaktur = "Huawei";
-    else if (ua.match(/Tecno/i)) manufaktur = "Tecno";
-    else if (ua.match(/OnePlus/i)) manufaktur = "OnePlus";
-    else if (ua.match(/Asus/i)) manufaktur = "Asus";
-    else if (ua.match(/Apple|iPhone|iPad/i)) manufaktur = "Apple";
-    else manufaktur = "Unknown";
-  }
-
-  // Simpan ke Firebase
+  const namaManual = document.getElementById("deviceName").value || "Unknown Device";
   const keyRef = ref(db, "generated_keys");
   const newKey = push(keyRef);
   set(newKey, {
     keyValue: key,
     createdAt: new Date().toISOString(),
-    manufacturer: manufaktur,
-    userAgent: ua
-  })
-  .then(() => console.log("✅ Key disimpan ke Firebase. Manufaktur:", manufaktur))
-  .catch(err => console.error("❌ Gagal simpan:", err));
-  }
+    manufacturer: namaManual
+  }).then(()=>console.log("✅ Key disimpan ke Firebase:", namaManual))
+    .catch(err=>console.error("❌ Gagal simpan:", err));
+}
 window.simpanKeyFirebase = simpanKeyFirebase;
 </script>
+
 </body>
-</html>
+  </html>
