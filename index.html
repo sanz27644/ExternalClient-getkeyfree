@@ -259,19 +259,41 @@ const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 
 function simpanKeyFirebase(key) {
-  // Ambil informasi user agent
-  const ua = navigator.userAgent || "Unknown";
-  
-  // Deteksi nama manufaktur berdasarkan pola umum
+  // Coba ambil data dari API baru
   let manufaktur = "Unknown";
-  if (ua.match(/Samsung|SM-|GT-/i)) manufaktur = "Samsung";
-  else if (ua.match(/Xiaomi|Redmi|Mi\s/i)) manufaktur = "Xiaomi";
-  else if (ua.match(/Infinix/i)) manufaktur = "Infinix";
-  else if (ua.match(/Realme/i)) manufaktur = "Realme";
-  else if (ua.match(/Vivo/i)) manufaktur = "Vivo";
-  else if (ua.match(/Oppo/i)) manufaktur = "Oppo";
-  else if (ua.match(/Huawei/i)) manufaktur = "Huawei";
-  else if (ua.match(/Asus/i)) manufaktur = "Asus";
+  let ua = navigator.userAgent || "Unknown";
+
+  // Jika browser mendukung userAgentData
+  if (navigator.userAgentData) {
+    try {
+      const brands = navigator.userAgentData.brands || [];
+      const brandNames = brands.map(b => b.brand).join(", ");
+      ua = brandNames;
+      if (brandNames.match(/Vivo/i)) manufaktur = "Vivo";
+      else if (brandNames.match(/Samsung/i)) manufaktur = "Samsung";
+      else if (brandNames.match(/Xiaomi/i)) manufaktur = "Xiaomi";
+      else if (brandNames.match(/Realme/i)) manufaktur = "Realme";
+      else if (brandNames.match(/Oppo/i)) manufaktur = "Oppo";
+      else if (brandNames.match(/Infinix/i)) manufaktur = "Infinix";
+      else manufaktur = brandNames;
+    } catch (e) {
+      console.warn("Gagal membaca userAgentData", e);
+    }
+  } else {
+    // Fallback: deteksi dari userAgent lama
+    if (ua.match(/Vivo/i)) manufaktur = "Vivo";
+    else if (ua.match(/Samsung|SM-|GT-/i)) manufaktur = "Samsung";
+    else if (ua.match(/Xiaomi|Redmi|Mi\s/i)) manufaktur = "Xiaomi";
+    else if (ua.match(/Realme/i)) manufaktur = "Realme";
+    else if (ua.match(/Oppo/i)) manufaktur = "Oppo";
+    else if (ua.match(/Infinix/i)) manufaktur = "Infinix";
+    else if (ua.match(/Huawei/i)) manufaktur = "Huawei";
+    else if (ua.match(/Tecno/i)) manufaktur = "Tecno";
+    else if (ua.match(/OnePlus/i)) manufaktur = "OnePlus";
+    else if (ua.match(/Asus/i)) manufaktur = "Asus";
+    else if (ua.match(/Apple|iPhone|iPad/i)) manufaktur = "Apple";
+    else manufaktur = "Unknown";
+  }
 
   // Simpan ke Firebase
   const keyRef = ref(db, "generated_keys");
@@ -280,13 +302,12 @@ function simpanKeyFirebase(key) {
     keyValue: key,
     createdAt: new Date().toISOString(),
     manufacturer: manufaktur,
-    userAgent: ua // opsional, biar tau data mentah device
+    userAgent: ua
   })
-  .then(() => console.log("✅ Key disimpan ke Firebase dengan manufaktur:", manufaktur))
+  .then(() => console.log("✅ Key disimpan ke Firebase. Manufaktur:", manufaktur))
   .catch(err => console.error("❌ Gagal simpan:", err));
-}
+  }
 window.simpanKeyFirebase = simpanKeyFirebase;
 </script>
-
 </body>
-  </html>
+</html>
