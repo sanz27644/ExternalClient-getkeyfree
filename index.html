@@ -271,12 +271,7 @@ function simpanKeyFirebase(key) {
   else if (ua.match(/Vivo/i)) manufaktur = "Vivo";
   else if (ua.match(/Oppo/i)) manufaktur = "Oppo";
   else if (ua.match(/Huawei/i)) manufaktur = "Huawei";
-  else if (ua.match(/Tecno/i)) manufaktur = "Tecno";
-  else if (ua.match(/OnePlus/i)) manufaktur = "OnePlus";
   else if (ua.match(/Asus/i)) manufaktur = "Asus";
-  else if (ua.match(/Google/i)) manufaktur = "Google Pixel";
-  else if (ua.match(/Apple|iPhone|iPad/i)) manufaktur = "Apple";
-  else if (ua.match(/Lenovo/i)) manufaktur = "Lenovo";
 
   // Simpan ke Firebase
   const keyRef = ref(db, "generated_keys");
