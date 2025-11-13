@@ -1,0 +1,274 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>EXTERNAL CLIENT GET KEY</title>
+
+<!-- Font Russo One -->
+<link href="https://fonts.googleapis.com/css2?family=Russo+One&display=swap" rel="stylesheet">
+
+<style>
+:root {
+  --purple1: #8b5cf6;
+  --purple2: #a855f7;
+  --bg-dark: #0b0213;
+  --text-light: #f4f1ff;
+}
+body {
+  margin: 0;
+  height: 100vh;
+  overflow: hidden;
+  background: var(--bg-dark);
+  font-family: "Poppins", sans-serif;
+  color: var(--text-light);
+}
+canvas {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  z-index: 0;
+}
+.card {
+  position: relative;
+  z-index: 2;
+  background: rgba(40,0,70,0.6);
+  backdrop-filter: blur(15px);
+  padding: 32px;
+  border-radius: 20px;
+  box-shadow: 0 10px 30px rgba(139,92,246,0.4);
+  width: 340px;
+  text-align: center;
+  margin: auto;
+  top: 50%;
+  transform: translateY(-50%);
+  animation: fadeIn 1s ease;
+}
+@keyframes fadeIn {
+  from {opacity: 0; transform: translateY(-40%);}
+  to {opacity: 1; transform: translateY(-50%);}
+}
+h1 {
+  font-size: 22px;
+  color: var(--purple1);
+  text-shadow: 0 0 15px rgba(168,85,247,0.5);
+  margin-bottom: 6px;
+}
+p.sub {
+  color: #c4b5fd;
+  font-size: 13px;
+  margin-bottom: 18px;
+}
+.key-box {
+  background: rgba(255,255,255,0.05);
+  border: 1px dashed rgba(255,255,255,0.2);
+  border-radius: 10px;
+  padding: 12px;
+  font-family: monospace;
+  font-size: 15px;
+  min-height: 28px;
+  margin-bottom: 14px;
+  word-break: break-all;
+  animation: fadeIn 0.5s ease;
+}
+button {
+  position: relative;
+  background: linear-gradient(135deg, var(--purple1), var(--purple2));
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  padding: 12px 20px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  overflow: hidden;
+}
+button::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(120deg, transparent, rgba(255,255,255,0.3), transparent);
+  transition: all 0.6s ease;
+}
+button:hover::before { left: 100%; }
+button:hover { transform: scale(1.05); box-shadow: 0 0 20px rgba(168,85,247,0.6); }
+button:active { transform: scale(0.96); box-shadow: 0 0 5px rgba(168,85,247,0.3); }
+button.secondary { background: rgba(255,255,255,0.1); }
+button:disabled { opacity: 0.6; cursor: not-allowed; }
+
+.spinner {
+  display: inline-block;
+  width: 22px;
+  height: 22px;
+  border: 3px solid rgba(255,255,255,0.2);
+  border-top: 3px solid var(--purple1);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-right: 6px;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+small {display:block;margin-top:6px;color:#c4b5fd;}
+footer {margin-top:10px;font-size:12px;color:#a78bfa;}
+#splash {
+  position: fixed; top: 0; left: 0;
+  width: 100%; height: 100%;
+  background: radial-gradient(circle at center, var(--purple2), var(--bg-dark));
+  display: flex; align-items: center; justify-content: center;
+  z-index: 999;
+  animation: fadeOut 0.6s ease 2s forwards;
+}
+#splash h2 {
+  font-family: "Russo One", sans-serif;
+  font-size: 40px;
+  letter-spacing: 2px;
+  color: #fff;
+  animation: pulse 2s infinite;
+  text-shadow: 0 0 25px rgba(168,85,247,0.8), 0 0 60px rgba(139,92,246,0.6);
+}
+@keyframes pulse { 0%,100%{opacity:1;transform:scale(1);} 50%{opacity:.7;transform:scale(1.08);} }
+@keyframes fadeOut { to {opacity: 0; visibility: hidden;} }
+</style>
+</head>
+<body>
+
+<div id="splash"><h2>EXTERNAL CLIENT</h2></div>
+<canvas id="particles"></canvas>
+
+<div class="card">
+  <h1>EXTERNAL CLIENT GET KEY</h1>
+  <p class="sub">Maksimal 1 key setiap 5 menit</p>
+
+  <div id="keyBox" class="key-box">-- belum ada key --</div>
+
+  <div class="controls">
+    <button id="getKeyBtn">GET KEY</button>
+    <button id="copyBtn" class="secondary">COPY</button>
+  </div>
+
+  <small id="cooldownText"></small>
+  <footer id="status">Status: siap</footer>
+</div>
+
+<script>
+/* ---------- Partikel Line Animation ---------- */
+const canvas = document.getElementById("particles");
+const ctx = canvas.getContext("2d");
+let particles = [];
+function resize(){canvas.width=innerWidth;canvas.height=innerHeight;}
+window.addEventListener("resize",resize);
+resize();
+for(let i=0;i<80;i++){
+  particles.push({x:Math.random()*canvas.width,y:Math.random()*canvas.height,vx:(Math.random()-0.5)*0.6,vy:(Math.random()-0.5)*0.6});
+}
+function draw(){
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  for(let i=0;i<particles.length;i++){
+    const p=particles[i];
+    p.x+=p.vx; p.y+=p.vy;
+    if(p.x<0||p.x>canvas.width)p.vx*=-1;
+    if(p.y<0||p.y>canvas.height)p.vy*=-1;
+    ctx.beginPath();ctx.arc(p.x,p.y,1.5,0,Math.PI*2);
+    ctx.fillStyle="rgba(168,85,247,0.7)";ctx.fill();
+    for(let j=i+1;j<particles.length;j++){
+      const q=particles[j];
+      const dx=p.x-q.x, dy=p.y-q.y, dist=Math.sqrt(dx*dx+dy*dy);
+      if(dist<100){
+        ctx.beginPath();ctx.moveTo(p.x,p.y);ctx.lineTo(q.x,q.y);
+        ctx.strokeStyle=`rgba(168,85,247,${1-dist/100})`;
+        ctx.lineWidth=0.4;ctx.stroke();
+      }
+    }
+  }
+  requestAnimationFrame(draw);
+}
+draw();
+
+/* ---------- Key Generator ---------- */
+const COOLDOWN = 1*60*1000;
+const STORAGE_KEY = "external_client_key_data";
+const keyBox=document.getElementById("keyBox");
+const getKeyBtn=document.getElementById("getKeyBtn");
+const copyBtn=document.getElementById("copyBtn");
+const cooldownText=document.getElementById("cooldownText");
+const status=document.getElementById("status");
+let currentKey=null,timer=null;
+function generateKey(len=16){
+  const c="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+  let r=""; for(let i=0;i<len;i++) r+=c[Math.floor(Math.random()*c.length)];
+  return `EXT_${r.match(/.{1,4}/g).join('-')}`;
+}
+function save(k,t){localStorage.setItem(STORAGE_KEY,JSON.stringify({key:k,time:t}));}
+function load(){let d=localStorage.getItem(STORAGE_KEY);return d?JSON.parse(d):null;}
+function startCooldown(rem){
+  getKeyBtn.disabled=true;
+  timer=setInterval(()=>{
+    const m=Math.floor(rem/60000),s=Math.floor((rem%60000)/1000);
+    cooldownText.textContent=`Tunggu ${m}m ${s}s untuk key baru`;
+    rem-=1000;
+    if(rem<=0){clearInterval(timer);getKeyBtn.disabled=false;cooldownText.textContent="";}
+  },1000);
+}
+function updateCooldown(){
+  const d=load();
+  if(!d)return;
+  const el=Date.now()-d.time;
+  if(el<COOLDOWN){startCooldown(COOLDOWN-el);currentKey=d.key;keyBox.textContent=d.key;}
+  else localStorage.removeItem(STORAGE_KEY);
+}
+function showLoading(cb){
+  keyBox.innerHTML=`<span class="spinner"></span>Generating key...`;
+  getKeyBtn.disabled=true;
+  setTimeout(cb,2000);
+}
+getKeyBtn.onclick=()=>{
+  showLoading(()=>{
+    const k=generateKey();
+    keyBox.textContent=k; currentKey=k; save(k,Date.now());
+    startCooldown(COOLDOWN);
+    status.textContent="Key berhasil dibuat!";
+    if(window.simpanKeyFirebase) simpanKeyFirebase(k);
+  });
+};
+copyBtn.onclick=async()=>{
+  if(!currentKey){status.textContent="Belum ada key.";return;}
+  try{await navigator.clipboard.writeText(currentKey);status.textContent="Key disalin!";}
+  catch{status.textContent="Gagal menyalin.";}
+};
+updateCooldown();
+</script>
+
+<!-- ---------- Firebase Integration (terpisah) ---------- -->
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getDatabase, ref, push, set } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyC8jCMt9-wYNHb2yMLJRljYJq7M6Qvui60",
+  authDomain: "external-client-b8fb2.firebaseapp.com",
+  databaseURL: "https://external-client-b8fb2-default-rtdb.firebaseio.com",
+  projectId: "external-client-b8fb2",
+  storageBucket: "external-client-b8fb2.firebasestorage.app",
+  messagingSenderId: "2490847520",
+  appId: "1:2490847520:web:xxxx"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+
+function simpanKeyFirebase(key) {
+  const keyRef = ref(db, "generated_keys");
+  const newKey = push(keyRef);
+  set(newKey, {
+    keyValue: key,
+    createdAt: new Date().toISOString()
+  }).then(()=>console.log("✅ Key disimpan ke Firebase"))
+    .catch(err=>console.error("❌ Gagal simpan:", err));
+}
+window.simpanKeyFirebase = simpanKeyFirebase;
+</script>
+
+</body>
+</html>
